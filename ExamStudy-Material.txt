@@ -1,0 +1,316 @@
+Kubernetes Fundamentals-46%
+	Manifest file is the one created using .yaml
+		manifest file
+	Mandatory fields in a k8s object
+		uid
+		name
+	List the default, default namespace, cluster, etc
+		default - ns and objects created by admins and developers
+		kube-public - unsecured and readable by all
+		kube-node-lease - node lease objects used for node heartbeat data by the admins
+		kube-system - created by the K8s system control plane
+	Kubernetes Resources
+		Pods
+			Preemption - prioritizing the high priority item over lower priority
+			Prioritization
+			Termination
+			Evicton
+			Pod life cycle
+				Unknown - state of the pod could not be obtained
+				Failed - All containers in the pod has terminated
+				Pending - accepted by K8s cluster, but waiting to be scheduled including downloading image over n/w
+				Succeeded - all jobs have completed and terminated
+				Running - pod / application running
+		Replicasets - for replicas
+		Deployments - includes replicaset and used to create a deployment resource
+		Services
+			Types
+				ClusterIP - default service type
+				LoadBalancer - uses a static port and exposed to outside cloud providers for invoking
+				NodePort - Has the routing rules. 30000-32767. Used along with ClusterIP
+				ExternalName - externally configured services to be used in applications in the cluster
+		Statefulsets
+			manages the deployment and scaling of a set of pods and provides guarantees about the ordering and uniqueness of these Pods
+			applications that need unique identity and guaranteed ordering of deployment
+			Headless Service - A Headless Service is used to identify specific pods by assigning them a DNS record. A Headless Service is required in order for a StatefulSet to work.
+		DaemonSets - Ensure one pod is running in a node at anytime. kubelet and kube proxy are examples of daemonset.
+		Labels - name value pair for storing metadata
+		Selectors - uses name value pairs for grouping objects
+		Jobs - create one or more pods to complete a given tasks. Retries until the execution is completed successfully.
+		CronJobs - time based / scheduled job
+		Secrets - are used to store sensitive information like passwords, tokens, keys etc. Stored separately from the pods. Stored encyrpted in etcd
+			To keep it safe
+				Enable encryption at rest
+				enable RBAC
+				Restrict secret access to specific containers
+				consider external secret store providers
+		ConfigMap - is to store key value pair, but is not for storing sensitive info. Is used to manage environment properties, configurations etc.
+		initContainer - one or more container run before the app containers are started
+		SideCar - Secondary container running in the same container
+		DNS - domain name system to identify different pods / containers using name instead of ip
+	Kubernetes Architecture
+		Control Plane and their components
+			Cloud Controller Manager - runs controller or operations to interact with the external cloud provider, manages load balancing and routing
+			API Server - interacts using restful services to the users admins, operators etc validates and process the requests.
+			Controller Manager - watchloop processes to monitor the k8 cluster and compare desired and exising status (from object config data vs etcd)
+				kube-controller-manager - runs controller or processes when node becomes unavailable, ensure pod count as expected, create endpoints, services, api access tokens. Also ensure desired number of applns are running at a time. Kubernetes comes with a set of built-in controllers that run inside the kube-controller-manager.
+			etcd - key value pair storage
+			kube-scheduler - Assigns a new workload objects, pods, nodes to the workernodes. Chooses a new worker node based on criteria like cpu memory etc. used to assign workload objects, pods, nodes. 
+		Worker plane and components
+			Kubelet - is an agent that communicates with api server in the control panel. interracts with container runtime to run the container. monitors the pod healths. CRI Shim
+			kube proxy - Nw agent. Dynamic network updates and maintenance of all nw rules.. routes the traffic to the exposed application running in the pod
+		kubectl - command line tool
+	Kubernetes API
+	Commands
+		kubectl top
+		kubectl config view
+		kubectl explain
+		kubectl edit
+		kubectl describe
+		kubectl run
+		kubectl create
+		kubectl logs
+		kubectl api-versions - List API Groups and their versions
+		kubectl api-resources - list out resource types as well as the API group they are associated
+		Use the cheat sheet - https://kubernetes.io/docs/reference/kubectl/cheatsheet/#viewing-and-finding-resources
+		kubectl delete pod unwanted --now - Delete a pod with no grace period
+		kubectl cordon my-node - Marking a node as unschedulable
+			prevents the scheduler from placing new pods onto that Node but does not affect existing Pods on the Node. This is useful as a preparatory step before a node reboot or other maintenance.
+		How to get logs
+			kubectl logs podname
+		Command to get list of API groups
+		Commands for
+			exposing a service
+			How to run image with 3 replicas
+		Command to list all namespaces in the cluster
+			Kubectl get namespaces
+	How is auto scaling implemented in K8
+		Grayscale and Grayscale autoscalar
+		Grafana and Prometheus
+		Prometheus and Prometheus adaptor - This is the answer
+	
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Container Orchestration-22%
+Container Orchestration Fundamentals
+	Topology Aware Hints
+Runtime
+	Ingress - rules that allow inbound connections to reach the cluster services. Also has Loadbalancing, Open 
+	egress - for outbound connections
+	By default the ingress and egress will be true to allow connections in and out
+Security
+	Authentication - Identify to authenticate against the API
+	Authorization - What the requsteor is allowed to do
+	Admission Control - Modify or validate the request
+		Admission Controller - piece of code that intercepts the requests to K8s API and validates
+	Types of authorization modes
+		Node - grants permission to kubelets on the pods that they are scheduled to run
+		RBAC - Role based access control - grants accesses based on roles
+		Webhook - is a http call back. auth decisions to be made by 3rd party services
+		Attribute based access control - Based on specific attributes
+	Open Policy Agent - Used to manage Admission control. OPA is a full-featured policy engine that offloads policy decisions from your service. You can think of it as a concierge for your service who can answer detailed questions on behalf of your users to meet their specific needs.
+Networking
+	Network Policies
+		Network identification of pods?
+			Namespace - A Namespace is a way to logically isolate resources within a Kubernetes Cluster. Namespaces can be organized based on project, department or any user-defined grouping.
+			Endpoint - Endpoints track the IP Addresses of the pods assigned to a Kubernetes Service. When a service selector matches a pod label, The pod IP Address is added to the pool of endpoints Pods expose themselves to services via endpoints.
+		Whats the network policy in Kubernetes
+			How pods communicate with all other entities in the cluster
+			Isolated nw space. each pod / container has its own ip
+			container-container inside pod
+			pod-pod across nods
+			external to pod
+		Default ports of local and secure hosts - 8080 and 6443
+		Service discovery and DNS
+			CoreDNS is the default dns server used in K8s
+		Service Mesh
+			Types of service mesh
+			Proxy and whats the use of Service Mesh
+			Tools
+				Linkerd - Open source network proxy Service mesh for K8
+				Consul - service mesh for K8s
+				Istio - service mesh
+Storage
+	Volumes
+		Persistent volume - A piece of storage provisioned by the admin to the useris where the administer provisions a storage of a specific storage class type.
+		PVC - An user claims the persistent volume and its called as the persistent volume claim
+		StorageClass - to set what type of storage class is being used.
+			Reclaiming a storage. Storage classes are either created by the admins when provisioning or dynamically. The reclaim policies are delete, recycle and retain
+			Default reclaim policy is delete - removes PV assets from storageclass
+			retain - manual reclaim of resources. Data remains
+		Provisioners - what type of storage class is being provisioned for the user - like azurefile, azuredissk, cephFS, aws ebs etc
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Cloud Native Architecture - 16%
+	Characteristics
+		Self healing
+		Scalable
+		High Automation
+		Cost efficient
+		secure
+		easy to maintain
+	Autoscaling
+		Horizontal - Increasing the number of nodes, pods, etc
+		Vertical - Increasing the size of memory, cpu etc
+		Cluster Autoscaling - Increasing the K8 cluster. This only functions in K8 only when the groups are with the same capacity
+	Serverless / Function as a service
+	OCI - Open Container Initiative
+		Open container initiative - standard and specification for running the vendor agnostic container orchestration applications like K8s
+			3 specs - image / build spec, runtime spec, distribution spec
+		Container Runtime CRI - Provides the runtime interface and plugins for running the container orchestration
+		Container Network Interface - Provides the network policies and plugins for setting up the network interfaces between components in a Container orchestrated network
+			Supported 3rd party networking plugins
+				Calico, Weave, Cilium, Infoblox, SR-10V
+		Container Storage Interface - exposing an arbitary block of file storage system. For external file storage.
+		Storage Mesh - Provides the proxy servers around the kubelets for 
+		Container Isolation - done using namespaces
+	Site Reliability Engineer roles and responsibilities
+		SLA (Agreement), SLI (Initiative), SLO (Service level Objective)
+	CNCF - Cloud Native Computing Foundation
+		How is discrepancy in cncf resolved
+		What do they do ?
+		How do they decide changes
+		Who approves it
+	TOC - Technical Oversight Committee - for maintaining the technical vision, approvals of new project, feedback, define practive. Encourages self governing. Minimum Viable governance
+		The TOC functions include:
+			defining and maintaining the technical vision for the Cloud Native Computing Foundation,
+			approving new projects and creating a conceptual architecture for the projects,
+			aligning projects and removing or archiving projects,
+			accepting feedback from end user committee and mapping to projects,
+			aligning interfaces to components under management (code reference implementations before standardizing), and
+			defining common practices to be implemented across CNCF projects.
+	Budget decisions are taken care by Governing Board	
+	Cloud Native applications
+	CNCF Approved tools
+		three maturity levels for CNCF projects? - Sandbox, Incubating, Graduated
+	Trail Map - The Cloud Native Trail Map is CNCF's recommended path through the cloud-native landscape.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Cloud Native Observability-8%
+Observability
+	Observe the metrics and either scale up or down
+	Traces - Used to trace something, like when a request was processed by a service and how long it took
+	Metrics - Metrics are quantitative measurements taken 
+		Metrics are exposed under /metrics
+	Logs - Messages emitted from application regularly for errors, warnings etc
+		Node level logging
+		Logging via sidecar container
+		Application level logging
+		Ship and Store logs - fluentd and filebeat
+		Store logs - OpenSearch and Grafana Loki
+Telemetry
+	Opentelemetry - set of tools for APIs, SDKs
+Tools
+	Open telemetry
+	Prometheus - Opensource monitoring system, originally developed by soundcloud
+		Histogram - A sample of observations
+		Summary - Similar to a histogram, but also provides the total count of observations
+		Gauge - value that increases or decreases, like memory
+		Counter - value that increases, like error count
+	AlertManager - When the alert is firing, Alertmanager can send a notification out to your favorite persistent chat tool, e-mail or specialized tools. its also in Prometheus
+	Grafanna - visualization tool
+	Zipkin - not CNCF - tracing platform
+	DataDog - Paid monitoring service
+	CoreDNS - default Core DNS used in K8s
+	etcd - distributed key value store that stores the state of the cluster
+		Data is never repeated and always appended
+		only apiserver communicate with the etcd data store
+		stores subnets, config maps and secrets
+	Jeager - distributed tracing platform
+	Rook - Open source cloud native storage for K8s
+	Helm - Package management for K8
+	Jenkins - CI CD build and Deployment tool
+	Jenkins X - same as Jenkins but no ui
+	Docker - container
+	Cri-o - container runtime
+	containerd - container runtime more simplified than docker
+	K3s - light weight for local, cloud, iot, edge etc
+	coreOS -  container runtime was created by Redhat and originally designed around the App Container spec
+	Podman - Simple k8 container orchestration tool for K8s for single nodes
+	Minikube - to run windows and local - single and multi node
+	Docker desktop - for docker users
+	Graphite - data storage and collection tool
+	Kubeless - to build serverless k8s application
+	Knative - to build serverless k8s application
+	Kustomize - for configuring kubernetes
+	Ansible - for managing k8s application
+	RunC - another container runtime
+	Envoy - Cloud native proxy
+	Flux - continuous delivery for K8s
+	Contour - ingress for K8s
+	ArgoCD - git ops tool with ui and commandline
+	Kyverno - Policy engine designed for K8s
+Cost Management
+	use right sizing
+	identify wasted and unused resources
+	reserved instances
+	spot instanecs
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Cloud Native Application Delivery-8%
+Application Delivery Fundamentals
+GitOps
+	Push-based
+		The pipeline is started and runs tools that make the changes in the platform. Changes can be triggered by a commit or merge request.
+	Pull-based
+		An agent watches the git repository for changes and compares the definition in the repository with the actual running state. If changes are detected, the agent applies the changes to the infrastructure.
+		Examples
+			ArgoCD
+			Flux
+CI/CD - Continuous Integration / Continuous Delivery
+	Tools
+		Spinnaker
+		Gitlab
+		Jenkins
+		Jenkins X
+		Tekton CD
+		ArgoCD
+	
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Others
+	Eviction - https://kubernetes.io/docs/concepts/scheduling-eviction/
+	Jsonpath - query language can be used to filter JSON results in Kubectl responses
+		https://kubernetes.io/docs/reference/kubectl/jsonpath/
+	What are Api groups - https://kubernetes.io/docs/reference/using-api/#api-groups
+	What are finalizers - https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/
+	Few basics in Linux and what they created originally - like coreOs, LXC, centOS, cgroups etc
+		https://rocket.readthedocs.io/en/latest/Documentation/rkt-vs-other-projects/ https://github.com/appc/spec/
+		https://www.redhat.com/en/topics/containers/what-is-rkt
+		https://www.redhat.com/en/technologies/cloud-computing/openshift/what-was-coreos
+	Hub & Spoke - API Server
+	Record of intent for K8 API - K8 objects
+	Endpoint Slices - Simple way to track network endpoints in a cluster
+	SIG - Special Interest Groups, a committee that report to the TOC. 
+	CNCF Landscapes - Serverless, Member native, cloudnative
+	Owner references - tells what are the ways to control the object references. Shows control plane which objects are dependent on others
+	TTL-after-finished controller - wait for sometime to do and then go ahead and leave.
+	Different types of deployments
+		A-B - deploy to a small set of users and if success promote to highter
+		Canary - new rollout, old deployment deleted
+		BlueGreen - no downtime
+		Red/black - sam as A to B but at a higher scale
+	Whats a sensitive information in a docker file and must not be included
+		avoid exposing ports
+		avoid using root and use specifc user
+		trusted imaes
+		no secret / credentials
+		be specific in commands
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+		
+To Study
+	probes - to check the health of the container.
+		Liveness probe - checks the liveness of the container and if needed restarts them
+		Readiness probe - check if applications are ready to receive requests
+	Eviction - Eviction is the process of proactively terminating one or more Pods on resource-starved Nodes
+	finalizers - Finalizers are namespaced keys that tell Kubernetes to wait until specific conditions are met before it fully deletes resources marked for deletion.
+	Pod Security Standards - https://kubernetes.io/docs/concepts/security/pod-security-standards/
+		Baseline
+		Privileged
+		Restricted
+	Gatekeeper
+
+	
